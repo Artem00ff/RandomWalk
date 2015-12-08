@@ -69,16 +69,20 @@ if ($l>1.94) {print "ERROR";}
 }
 }
 #print "Scitical params = ", rad2deg($O_max)," ", $l_max,"\n";
-out_in_console(%chains);
+out_in_console(\%chains);
+
 #
-#output in console
+#output in console 
+# %chains transmited as link
 sub out_in_console{
-for ($i=1; $i<=$_{'M'}; $i++){
- my $tempR2 = ($_{'mols'}[$i][1][0]-$_{'mols'}[$i][$N][0])**2+($_{'mols'}[$i][1][1]-$_{'mols'}[$i][$N][1])**2+($_{'mols'}[$i][1][2]-$_{'mols'}[$i][$N][2])**2;
- print "Molecular $i R**2 = $tempR2 \n";
-    for ($k=1;$k<=$_{'N'};$k++){
-        my @temp=@{$_{mols}[$i][$k]};
-        print "@temp \n";
-        }
+  my %inhash = %{shift()};
+     for ($i=1; $i<=$inhash{'M'}; $i++){
+         my $tempR2 = ($inhash{'mols'}[$i][1][0]-$inhash{'mols'}[$i][$N][0])**2+($inhash{'mols'}[$i][1][1]-$inhash{'mols'}[$i][$N][1])**2+($inhash{'mols'}[$i][1][2]-$inhash{'mols'}[$i][$N][2])**2;
+         print "Molecular $i R**2 = $tempR2 \n";
+               for ($k=1;$k<=$inhash{'N'};$k++){
+               my @temp=@{$inhash{mols}[$i][$k]};
+               print "@temp \n";
+               }
+
 }
 }
