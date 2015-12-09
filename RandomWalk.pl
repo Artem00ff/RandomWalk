@@ -13,17 +13,19 @@ my $N=5;
 my $M=2;
 my $C=1.76;
 my $b=0.97;
-my ($i,$k,$Q,$fi,$l);
-my @randpos;
-my @nullpos=(0,0,0);
+my %chains;
+#my ($i,$k,$Q,$fi,$l);
 
+sub MakeWalk(%){
 my %chains= ('header' => $str,
             'N' => $N,
             'M' => $M,
             'Cinf' => $C,
             'b' => $b );
-sub MakeWalk(%){
- my %chains = %{shift()};
+
+ my ($i,$k,$Q,$fi,$l);
+ my @randpos;
+ my @nullpos=(0,0,0);
 #calculating of critical parameters
 my $O_max=2*acos(sqrt(($chains{'Cinf'}-1)/($chains{'Cinf'}+1)));
 my $l_max=$chains{'b'}*sqrt((1-cos(pi-$O_max))**2+sin($O_max)**2);
@@ -63,16 +65,19 @@ if ($l>1.94) {print "ERROR";}
 @{$chains{'mols'}[$i][$k]} = @randpos;
 }
 }
+return %chains;
 }
 #print "Scitical params = ", rad2deg($O_max)," ", $l_max,"\n";
-MakeWalk(\%chains);
+###############   main  #############################
+%chains=MakeWalk();
 out_in_console(\%chains);
-
+###############  end main ###########################
 ###################################################################################
 #output in console 
 # %chains transmited as link
 sub out_in_console{
   my %inhash = %{shift()};
+  my ($i,$k);
      for ($i=1; $i<=$inhash{'M'}; $i++){
          my $tempR2 = ($inhash{'mols'}[$i][1][0]-$inhash{'mols'}[$i][$N][0])**2+($inhash{'mols'}[$i][1][1]-$inhash{'mols'}[$i][$N][1])**2+($inhash{'mols'}[$i][1][2]-$inhash{'mols'}[$i][$N][2])**2;
          print "Molecular $i R**2 = $tempR2 \n";
