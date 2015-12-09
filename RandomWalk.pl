@@ -13,11 +13,8 @@ my $N=5;
 my $M=2;
 my $C=1.76;
 my $b=0.97;
-my ($i,$k);
+my ($i,$k,$Q,$fi,$l);
 my @randpos;
-my $Q;
-my $fi;
-my $l;
 my @nullpos=(0,0,0);
 
 my %chains= ('header' => $str,
@@ -25,9 +22,11 @@ my %chains= ('header' => $str,
             'M' => $M,
             'Cinf' => $C,
             'b' => $b );
+sub MakeWalk(%){
+ my %chains = %{shift()};
+#calculating of critical parameters
 my $O_max=2*acos(sqrt(($chains{'Cinf'}-1)/($chains{'Cinf'}+1)));
 my $l_max=$chains{'b'}*sqrt((1-cos(pi-$O_max))**2+sin($O_max)**2);
-
 
 #make first atom
 for ($i=1; $i<=$chains{'M'}; $i++) {
@@ -40,10 +39,6 @@ $Q = pi*rand();
 @randpos = ($chains{'b'}*sin($Q)*cos($fi),$chains{'b'}*sin($Q)*sin($fi),$chains{'b'}*cos($Q));
 @{$chains{'mols'}[$i][2]} = @randpos;
 }
-
-
-
-
 #make atoms from 3 to N
 for ($k=3; $k<=$N; $k++){
 for ($i=1; $i<=$M; $i++) {
@@ -68,10 +63,12 @@ if ($l>1.94) {print "ERROR";}
 @{$chains{'mols'}[$i][$k]} = @randpos;
 }
 }
+}
 #print "Scitical params = ", rad2deg($O_max)," ", $l_max,"\n";
+MakeWalk(\%chains);
 out_in_console(\%chains);
 
-#
+###################################################################################
 #output in console 
 # %chains transmited as link
 sub out_in_console{
@@ -86,3 +83,4 @@ sub out_in_console{
 
 }
 }
+###################################################################################
