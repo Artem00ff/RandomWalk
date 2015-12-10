@@ -1,7 +1,7 @@
 use strict;
 use lib 'C:\Strawberry\perl\lib';
 use ModPolymatic();
-use Polymatic();
+
 use Getopt::Long();
 use Math::Trig;
 # Import constants pi2, pip2, pip4 (2*pi, pi/2, pi/4).
@@ -15,7 +15,9 @@ my $C=1.76;
 my $b=0.97;
 my $len=10;
 my (%chains,%sys);
-#my ($i,$k,$Q,$fi,$l);
+my $type1=1;
+my $type2=1;
+
 ################## make walk - chains generation ###################
 sub MakeWalk(%){
 #making system hash
@@ -23,7 +25,8 @@ my %chains= ('header' => $str,
             'N' => $N,
             'M' => $M,
             'Cinf' => $C,
-            'b' => $b );
+            'b' => $b,
+            'len' => $len);
 
 my ($i,$k,$Q,$fi,$l,@randpos);
 my @nullpos=(0,0,0);
@@ -56,7 +59,7 @@ for ($k=3; $k<=$N; $k++){
                                   $randpos[1] = $chains{'mols'}[$i][$k-1][1] + $chains{'b'}*sin($Q)*sin($fi);
                                   $randpos[2] = $chains{'mols'}[$i][$k-1][2] + $chains{'b'}*cos($Q);
                                  $l=sqrt(($chains{'mols'}[$i][$k-2][0]-$randpos[0])**2+($chains{'mols'}[$i][$k-2][1]-$randpos[1])**2+($chains{'mols'}[$i][$k-2][2]-$randpos[2])**2);
-              #print $k," ",$i," ",$fuse," ",$l," ", $l_max,"\n";
+
                                  if ($fuse>1000) { print "fuse is over N= $k M= $i"; last;}
                                  if ($l>1.94) {print "ERROR";}
               } until ($l>$l_max) ;
@@ -154,9 +157,9 @@ my %chains = %{shift()};
 for (my $i=1; $i<=$chains{'M'}; $i++){
   my ($x0,$y0,$z0);
                for (my $k=1;$k<=$chains{'N'};$k++){
-                   $x0=$len*rand();
-                   $y0=$len*rand();
-                   $z0=$len*rand();
+                   $x0=$chains{'len'}*rand();
+                   $y0=$chains{'len'}*rand();
+                   $z0=$chains{'len'}*rand();
                     $chains{'mols'}[$i][$k][0]+=$x0;
                     $chains{'mols'}[$i][$k][1]+=$y0;
                     $chains{'mols'}[$i][$k][2]+=$z0;
@@ -166,19 +169,19 @@ for (my $i=1; $i<=$chains{'M'}; $i++){
 for (my $i=1; $i<=$chains{'M'}; $i++){
                for (my $k=1;$k<=$chains{'N'};$k++){
 
-                   if($chains{'mols'}[$i][$k][0] > $len) {
+                   if($chains{'mols'}[$i][$k][0] > $chains{'len'}) {
                    for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][0] -= $len;}
                    }
                    if ($chains{'mols'}[$i][$k][0] < 0){
                    for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][0] += $len;}
                    }
-                   if ($chains{'mols'}[$i][$k][1] > $len) {
+                   if ($chains{'mols'}[$i][$k][1] > $chains{'len'}) {
                    for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][1] -= $len;}
                    }
                    if ($chains{'mols'}[$i][$k][1] < 0){
                    for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][1] += $len;}
                    }
-                   if ($chains{'mols'}[$i][$k][2] > $len) {
+                   if ($chains{'mols'}[$i][$k][2] > $chains{'len'}) {
                    for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][2] -= $len;}
                    }
                    if ($chains{'mols'}[$i][$k][2] < 0){
@@ -189,14 +192,100 @@ for (my $i=1; $i<=$chains{'M'}; $i++){
 }
 #############  adding periodic boundary condition end
 
+
+
+
+
+# writeLammps( \%sys, $file )
+# Write LAMMPS data file for given molecular system
+sub writeLammpsTypeBond
+{
+    # Variables
+    my %chains = %{shift()};
+    my $file = shift();
+
+    my ($num, $mol, $type, $q, @temp);
+
+
+    # Open file
+    open FILE, "> $file" or die "Error opening file '$file': $!";
+
+    # Header
+    printf FILE "%s\n\n", $chains{'header'};
+
+    # Counts
+    printf FILE "%d atoms\n", $chains{'M'}*$chains{'N'};
+    printf FILE "%d bonds\n", $chains{'M'}*($chains{'N'}-1);
+
+    printf FILE "%d atom types\n", 2;
+    printf FILE "%d bond types\n", 1;
+    printf FILE "\n";
+
+    # Box dimensions
+    printf FILE "%f %f xlo xhi\n",0,$chains{'len'};
+    printf FILE "%f %f ylo yhi\n",0,$chains{'len'};
+    printf FILE "%f %f zlo zhi\n\n",0,$chains{'len'};
+
+    # Masses
+        printf FILE "Masses\n\n";
+        printf FILE " 1 1\n 2 1\n";
+        printf FILE "\n";
+
+    # Atoms
+        printf FILE "Atoms\n\n";
+        for (my $i=1; $i<=$chains{'M'}; $i++){
+               for (my $k=1; $k<=$chains{'N'}; $k++){
+                my $AtomNumber=$k+$chains{'N'}*($i-1);
+                my $MolNumber = $i;
+                #printf File $AtomNumber,"\n";
+                if ($i % ($type1 + $type2) < $type1) {$type = 1;}
+                else {$type = 2;}
+
+                @temp = @{$chains{'mols'}[$i][$k]};
+                 printf FILE " $AtomNumber $MolNumber $type $chains{'mols'}[$i][$k][0] $chains{'mols'}[$i][$k][1] $chains{'mols'}[$i][$k][2]\n";
+        }
+        }
+        printf FILE "\n";
+
+    # Bonds
+        printf FILE "Bonds\n\n";
+
+
+        for (my $i=1; $i<=$chains{'M'}; $i++){
+               for (my $k=1;$k<$chains{'N'};$k++){
+                my $AtomNumber=$k+$chains{'N'}*($i-1);
+                my $MolNumber = $i;
+
+                if ($i % ($type1 + $type2) < $type1) {$type = 1;}
+                else {$type = 2;}
+
+                 my $s = $k+($chains{'N'}-1)*($i-1);
+                 my $f1 = $k + ($i-1)*($chains{'N'});
+                 my $f2 = $k + ($i-1)*($chains{'N'})+1 ;
+                 print FILE " $s $type $f1 $f2\n";
+        }
+        }
+        printf FILE "\n";
+
+
+
+    # Close file
+    close FILE;
+}
+
+sub convert_lammps_to_pdb{
+my %sys = Polymatic::readLammpsTypeBond($_[0]);
+Polymatic::writePdb($_[1], \%sys);
+
+}
 ###############   main  #############################
 %chains=MakeWalk();
-out_in_console(\%chains);
-output_to_file (\%chains , 'dump.txt');
+#out_in_console(\%chains);
+#output_to_file (\%chains , 'dump.txt');
 #output_to_pdb (\%chains , 'dump.pdb');
 location_to_cell(\%chains);
-
-
-
- output_to_file (\%chains , 'dumpPBCX.txt');
+output_to_file (\%chains , 'dumpPBCX.txt');
+writeLammpsTypeBond(\%chains, 'chains.lmps');
+convert_lammps_to_pdb('chains.lmps', 'chains.pdb')
 ###############  end main ###########################
+
