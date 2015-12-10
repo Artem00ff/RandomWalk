@@ -9,8 +9,8 @@ use Math::Trig ':pi';
 
 ######################## system params ###############
 my $str = 'first probe';
-my $N=5;
-my $M=2;
+my $N=100;
+my $M=1;
 my $C=1.76;
 my $b=0.97;
 my %chains;
@@ -51,18 +51,14 @@ for ($k=3; $k<=$N; $k++){
 
               $fi = 2*pi*rand();
               $Q = pi*rand();
-#print "rand $fi $Q\n";
-#print "$chains{'mols'}[$i][2][0] $chains{'mols'}[$i][2][1] $chains{'mols'}[$i][2][2] \n";
                                   $randpos[0] = $chains{'mols'}[$i][$k-1][0] + $chains{'b'}*sin($Q)*cos($fi);
                                   $randpos[1] = $chains{'mols'}[$i][$k-1][1] + $chains{'b'}*sin($Q)*sin($fi);
                                   $randpos[2] = $chains{'mols'}[$i][$k-1][2] + $chains{'b'}*cos($Q);
-#print  "$randpos[0] $randpos[1] $randpos[2] \n";
                                  $l=sqrt(($chains{'mols'}[$i][$k-2][0]-$randpos[0])**2+($chains{'mols'}[$i][$k-2][1]-$randpos[1])**2+($chains{'mols'}[$i][$k-2][2]-$randpos[2])**2);
-                                 print $k," ",$i," ",$fuse," ",$l," ", $l_max,"\n";
+              #print $k," ",$i," ",$fuse," ",$l," ", $l_max,"\n";
                                  if ($fuse>1000) { print "fuse is over N= $k M= $i"; last;}
                                  if ($l>1.94) {print "ERROR";}
               } until ($l>$l_max) ;
-#print "$i $fi $Q \n";
            @{$chains{'mols'}[$i][$k]} = @randpos;
            }
        }
@@ -70,8 +66,8 @@ return %chains;
 }
 ############# end make walk #################
 #print "Scitical params = ", rad2deg($O_max)," ", $l_max,"\n";
-###################################################################################
-#output in console
+#################  output in console  ###################################################################
+
 # %chains transmited as link
 sub out_in_console{
   my %inhash = %{shift()};
@@ -86,10 +82,70 @@ sub out_in_console{
 
 }
 }
-###################################################################################
+#################### end output in console ###############################################################
 
 ###############   main  #############################
 %chains=MakeWalk();
 out_in_console(\%chains);
+output_to_file (\%chains , 'dump.txt');
+output_to_pdb (\%chains , 'dump.pdb');
 ###############  end main ###########################
 
+############# output to file #########################
+sub output_to_file($$){
+
+  my %inhash = %{shift()};
+  my $filename = shift();
+
+open (my $ChainDump, '>', $filename) or die "Can't open dump file $filename \n";
+print $ChainDump "This is RANDOMWalk dump file \n";
+
+
+ for (my $i=1; $i<=$inhash{'M'}; $i++){
+         my $tempR2 = ($inhash{'mols'}[$i][1][0]-$inhash{'mols'}[$i][$N][0])**2+($inhash{'mols'}[$i][1][1]-$inhash{'mols'}[$i][$N][1])**2+($inhash{'mols'}[$i][1][2]-$inhash{'mols'}[$i][$N][2])**2;
+         print $ChainDump "Molecular $i R**2 = $tempR2 \n";
+               for (my $k=1;$k<=$inhash{'N'};$k++){
+               my @temp=@{$inhash{mols}[$i][$k]};
+               print $ChainDump "@temp \n";
+               }
+ }
+
+close $ChainDump;
+}
+############# end output to file #########################
+
+############## output to pdb ######################
+sub output_to_pdb($$){
+
+  my %inhash = %{shift()};
+  my $filename = shift();
+
+open (my $ChainDump, '>', $filename) or die "Can't open dump file $filename \n";
+print $ChainDump "TITLE This is RANDOMWalk dump file \n";
+print $ChainDump "REMARK generated dy RANDOMWalk\n";
+print $ChainDump "CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1\n";
+print $ChainDump "MODEL     1 \n";
+
+
+ for (my $i=1; $i<=$inhash{'M'}; $i++){
+         my $tempR2 = ($inhash{'mols'}[$i][1][0]-$inhash{'mols'}[$i][$N][0])**2+($inhash{'mols'}[$i][1][1]-$inhash{'mols'}[$i][$N][1])**2+($inhash{'mols'}[$i][1][2]-$inhash{'mols'}[$i][$N][2])**2;
+         #print $ChainDump "Molecular $i R**2 = $tempR2 \n";
+               for (my $k=1;$k<=$inhash{'N'};$k++){
+               my @temp=@{$inhash{mols}[$i][$k]};
+               my $name=1;
+               my $res='MOL';
+               my $resNum=1;
+               printf $ChainDump "ATOM  %5d %-4s %-3s  %4d    %8.3f%8.3f%8.3f". "  1.00  0.00\n", $k, $name, $res, $resNum,
+                $inhash{mols}[$i][$k][0], $inhash{mols}[$i][$k][1], $inhash{mols}[$i][$k][2];
+               }
+ }
+for (my $k=1;$k<=$inhash{'N'};$k++){
+
+  for ($k<$inhash{'N'} and $k>1) { print $ChainDump "CONECT $k ",($k+1)," ",($k-1)," \n";}
+  #else if($k=1) print $ChainDump "CONECT $k ()";
+
+}
+print $ChainDump "TER \nENDMDL \n";
+close $ChainDump;
+}
+#####################################
