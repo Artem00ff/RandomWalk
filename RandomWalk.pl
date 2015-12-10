@@ -10,10 +10,11 @@ use Math::Trig ':pi';
 ######################## system params ###############
 my $str = 'first probe';
 my $N=100;
-my $M=1;
+my $M=2;
 my $C=1.76;
 my $b=0.97;
-my %chains;
+my $len=7;
+my (%chains,%sys);
 #my ($i,$k,$Q,$fi,$l);
 ################## make walk - chains generation ###################
 sub MakeWalk(%){
@@ -88,7 +89,7 @@ sub out_in_console{
 %chains=MakeWalk();
 out_in_console(\%chains);
 output_to_file (\%chains , 'dump.txt');
-output_to_pdb (\%chains , 'dump.pdb');
+#output_to_pdb (\%chains , 'dump.pdb');
 ###############  end main ###########################
 
 ############# output to file #########################
@@ -149,3 +150,60 @@ print $ChainDump "TER \nENDMDL \n";
 close $ChainDump;
 }
 #####################################
+
+#%sys = ('header' => $chains{'header'});
+
+#@{$sys{'boxDims'}{'x'}} = (0,$hi,$hi);
+#@{$sys{'boxDims'}{'y'}} = (0,$hi,$hi);
+#@{$sys{'boxDims'}{'z'}} = (0,$hi,$hi);
+
+#$sys{'mols'}{'count'} = $chains{'M'};
+#for (my $i=1; $i<=$chains{'M'}; )
+#$sys{'mols'}{'atoms'}[1] = (1..N);
+# randomising starting position
+for (my $i=1; $i<=$chains{'M'}; $i++){
+  my ($x0,$y0,$z0);
+               for (my $k=1;$k<=$chains{'N'};$k++){
+                   #$x0=$len*rand();
+                   #$y0=$len*rand();
+                   #$z0=$len*rand();
+                   $x0=0;
+                   $y0=0;
+                   $z0=0;
+                    $chains{'mols'}[$i][$k][0]+=$x0;
+                    $chains{'mols'}[$i][$k][1]+=$y0;
+                    $chains{'mols'}[$i][$k][2]+=$z0;
+               }
+}
+############ adding periodic boundary condition x,y,z=len
+for (my $i=1; $i<=$chains{'M'}; $i++){
+               for (my $k=1;$k<=$chains{'N'};$k++){
+
+                   if($chains{'mols'}[$i][$k][0] > $len) {
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][0] -= $len;}
+                   }
+                   elsif ($chains{'mols'}[$i][$k][0] < 0){
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][0] += $len;}
+                   }
+                   elsif ($chains{'mols'}[$i][$k][1] > $len) {
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][1] -= $len;}
+                   }
+                   elsif ($chains{'mols'}[$i][$k][1] < 0){
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][1] += $len;}
+                   }
+                   elsif ($chains{'mols'}[$i][$k][2] > $len) {
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][2] -= $len;}
+                   }
+                   elsif ($chains{'mols'}[$i][$k][2] < 0){
+                   for (my $j=$k;$j<=$chains{'N'};$j++) {$chains{'mols'}[$i][$j][2] += $len;}
+                   }
+}
+}
+#############  adding periodic boundary condition end
+
+
+
+
+
+ output_to_file (\%chains , 'dumpPBCX.txt');
+
