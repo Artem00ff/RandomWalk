@@ -10,10 +10,10 @@ use Math::Trig ':pi';
 ######################## system params ###############
 my $str = 'System 1';
 my $N=200;
-my $M=200;
+my $M=2;
 my $C=1.76;
 my $b=0.97;
-my $len=36;
+my $len=100;
 my (%chains,%sys);
 my $type1=1;
 my $type2=1;
@@ -156,10 +156,11 @@ my %chains = %{shift()};
 # randomising starting position
 for (my $i=1; $i<=$chains{'M'}; $i++){
   my ($x0,$y0,$z0);
+  $x0=$chains{'len'}*rand();
+  $y0=$chains{'len'}*rand();
+  $z0=$chains{'len'}*rand();
                for (my $k=1;$k<=$chains{'N'};$k++){
-                   $x0=$chains{'len'}*rand();
-                   $y0=$chains{'len'}*rand();
-                   $z0=$chains{'len'}*rand();
+                   
                     $chains{'mols'}[$i][$k][0]+=$x0;
                     $chains{'mols'}[$i][$k][1]+=$y0;
                     $chains{'mols'}[$i][$k][2]+=$z0;
