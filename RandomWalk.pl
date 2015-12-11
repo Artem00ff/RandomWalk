@@ -10,10 +10,10 @@ use Math::Trig ':pi';
 ######################## system params ###############
 my $str = 'System 1';
 my $N=200;
-my $M=2;
+my $M=200;
 my $C=1.76;
 my $b=0.97;
-my $len=100;
+my $len=36;
 my (%chains,%sys);
 my $type1=1;
 my $type2=1;
@@ -286,11 +286,14 @@ Polymatic::writePsf($_[1], \%sys);
 }
 ###############   main  #############################
 %chains=MakeWalk();
+writeLammpsTypeBond(\%chains, 'chainsbefore.lmps');
+convert_lammps_to_pdb('chainsbefore.lmps', 'chainsbefore.pdb');
+convert_lammps_to_psf('chainsbefore.lmps', 'chainsbefore.psf');
 #out_in_console(\%chains);
 #output_to_file (\%chains , 'dump.txt');
 #output_to_pdb (\%chains , 'dump.pdb');
 location_to_cell(\%chains);
-output_to_file (\%chains , 'dumpPBCX.txt');
+#output_to_file (\%chains , 'dumpPBCX.txt');
 writeLammpsTypeBond(\%chains, 'chains.lmps');
 convert_lammps_to_pdb('chains.lmps', 'chains.pdb');
 convert_lammps_to_psf('chains.lmps', 'chains.psf');
