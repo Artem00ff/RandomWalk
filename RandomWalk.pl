@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 use lib 'C:\Strawberry\perl\lib';
 use ModPolymatic();
 
@@ -9,11 +10,11 @@ use Math::Trig ':pi';
 
 ######################## system params ###############
 my $str = 'System 1';
-my $N=200;
-my $M=200;
+my $N=2000;
+my $M=1;
 my $C=1.76;
 my $b=0.97;
-my $len=36;
+my $len=100;
 my (%chains,%sys);
 my $type1=1;
 my $type2=1;
@@ -155,15 +156,18 @@ sub location_to_cell($){
 my %chains = %{shift()};
 # randomising starting position
 for (my $i=1; $i<=$chains{'M'}; $i++){
-  my ($x0,$y0,$z0);
-               for (my $k=1;$k<=$chains{'N'};$k++){
-                   $x0=$chains{'len'}*rand();
-                   $y0=$chains{'len'}*rand();
-                   $z0=$chains{'len'}*rand();
+                   for (my $k=1; $k<=$chains{'N'}; $i++){
+                   #my $x0=$chains{'len'}*rand();
+                   #my $y0=$chains{'len'}*rand();
+                   #my $z0=$chains{'len'}*rand();
+                   my $x0 = 0;
+                   my $y0 = 0;
+                   my $z0 = 0;
                     $chains{'mols'}[$i][$k][0]+=$x0;
                     $chains{'mols'}[$i][$k][1]+=$y0;
                     $chains{'mols'}[$i][$k][2]+=$z0;
-               }
+                   }
+
 }
 ############ adding periodic boundary condition x,y,z=len
 for (my $i=1; $i<=$chains{'M'}; $i++){
@@ -288,10 +292,13 @@ Polymatic::writePsf($_[1], \%sys);
 #out_in_console(\%chains);
 #output_to_file (\%chains , 'dump.txt');
 #output_to_pdb (\%chains , 'dump.pdb');
+writeLammpsTypeBond(\%chains, 'chainsbefore.lmps');
+convert_lammps_to_pdb('chainsbefore.lmps', 'chainsbefore.pdb');
+convert_lammps_to_psf('chainsbefore.lmps', 'chainsbefore.psf');
 location_to_cell(\%chains);
-output_to_file (\%chains , 'dumpPBCX.txt');
+#output_to_file (\%chains , 'dumpPBCX.txt');
 writeLammpsTypeBond(\%chains, 'chains.lmps');
 convert_lammps_to_pdb('chains.lmps', 'chains.pdb');
 convert_lammps_to_psf('chains.lmps', 'chains.psf');
 ###############  end main ###########################
-
+print "Done";
