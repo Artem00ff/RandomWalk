@@ -296,8 +296,10 @@ writeLammpsTypeBond(\%chains, 'chainsbefore.lmps');
 convert_lammps_to_pdb('chainsbefore.lmps', 'chainsbefore.pdb');
 convert_lammps_to_psf('chainsbefore.lmps', 'chainsbefore.psf');
 location_to_cell(\%chains);
+print "Done location to cell";
 #output_to_file (\%chains , 'dumpPBCX.txt');
 writeLammpsTypeBond(\%chains, 'chains.lmps');
+print "Done writing lammps";
 convert_lammps_to_pdb('chains.lmps', 'chains.pdb');
 convert_lammps_to_psf('chains.lmps', 'chains.psf');
 ###############  end main ###########################
