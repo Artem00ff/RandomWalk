@@ -8,12 +8,12 @@ use Math::Trig;
 use Math::Trig ':pi';
 
 ######################## system params ###############
-my $str = 'first probe';
-my $N=100;
-my $M=5;
+my $str = 'System 1';
+my $N=200;
+my $M=200;
 my $C=1.76;
 my $b=0.97;
-my $len=10;
+my $len=36;
 my (%chains,%sys);
 my $type1=1;
 my $type2=1;
@@ -218,7 +218,7 @@ sub writeLammpsTypeBond
     printf FILE "%d bonds\n", $chains{'M'}*($chains{'N'}-1);
 
     printf FILE "%d atom types\n", 2;
-    printf FILE "%d bond types\n", 1;
+    printf FILE "%d bond types\n", 2;
     printf FILE "\n";
 
     # Box dimensions
@@ -278,6 +278,11 @@ my %sys = Polymatic::readLammpsTypeBond($_[0]);
 Polymatic::writePdb($_[1], \%sys);
 
 }
+sub convert_lammps_to_psf{
+my %sys = Polymatic::readLammpsTypeBond($_[0]);
+Polymatic::writePsf($_[1], \%sys);
+
+}
 ###############   main  #############################
 %chains=MakeWalk();
 #out_in_console(\%chains);
@@ -286,6 +291,7 @@ Polymatic::writePdb($_[1], \%sys);
 location_to_cell(\%chains);
 output_to_file (\%chains , 'dumpPBCX.txt');
 writeLammpsTypeBond(\%chains, 'chains.lmps');
-convert_lammps_to_pdb('chains.lmps', 'chains.pdb')
+convert_lammps_to_pdb('chains.lmps', 'chains.pdb');
+convert_lammps_to_psf('chains.lmps', 'chains.psf');
 ###############  end main ###########################
 
